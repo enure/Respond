@@ -91,7 +91,12 @@
       return xmlhttpmethod;
     };
   }(), ajax = function(url, callback) {
-    var req = xmlHttp();
+    var req;
+    if (w.xdomain) {
+      req = new w.XMLHttpRequest();
+    } else {
+      req = xmlHttp();
+    }
     if (!req) {
       return;
     }

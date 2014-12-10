@@ -27,7 +27,14 @@
 
 		//tweaked Ajax functions from Quirksmode
 		ajax = function( url, callback ) {
-			var req = xmlHttp();
+			var req;
+			// For compatibility with jpillora/xdomain. See issue:
+			// https://github.com/jpillora/xdomain/issues/120
+			if (w.xdomain) {
+				req = new w.XMLHttpRequest();
+			} else {
+				req = xmlHttp();
+			}
 			if (!req){
 				return;
 			}
