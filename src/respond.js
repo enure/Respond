@@ -321,7 +321,12 @@
 						translate( sheet.styleSheet.rawCssText, href, media );
 						parsedSheets[ href ] = true;
 					} else {
-						if( (!/^([a-zA-Z:]*\/\/)/.test( href ) && !base) ||
+						// I don't really get the checks below. It's supposed to work
+						// with a proxy (see cross-domain/ dir), but here seemingly
+						// respond makes sure that the stylesheet href is a local file.
+						// Adding check for w.xdomain so we can actually continue.
+						if (w.xdomain ||
+							(!/^([a-zA-Z:]*\/\/)/.test( href ) && !base) ||
 							href.replace( RegExp.$1, "" ).split( "/" )[0] === w.location.host ){
 							// IE7 doesn't handle urls that start with '//' for ajax request
 							// manually add in the protocol
