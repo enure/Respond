@@ -71,11 +71,18 @@
 		other: /\([^\)]*\)/g
 	};
 
-	//expose media query support flag for external use
-	respond.mediaQueriesSupported = w.matchMedia && w.matchMedia( "only all" ) !== null && w.matchMedia( "only all" ).matches;
+	// expose media query support flag for external use
+	// respond.mediaQueriesSupported = w.matchMedia && w.matchMedia( "only all" ) !== null && w.matchMedia( "only all" ).matches;
 
 	//if media queries are supported, exit here
-	if( respond.mediaQueriesSupported ){
+	// if (respond.mediaQueriesSupported ){
+	//	return;
+	//}
+
+	// Don't run on IE9. We only serve respond.js via conditional comments,
+	// and it's served to both IE8 and IE9. IE9 supports media queries,
+	// so don't run if IE9...
+	if (w.document.documentElement.className.indexOf('is-ie9') !== -1) {
 		return;
 	}
 

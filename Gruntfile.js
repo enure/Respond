@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 		banner:
 						'/*! Respond.js v<%= pkg.version %>: <%= pkg.description %>\n' +
 						' * Copyright <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>\n' +
-						' * Licensed under <%= _.pluck(pkg.licenses, "type").join(", ") %>\n' + 
+						' * Licensed under <%= _.pluck(pkg.licenses, "type").join(", ") %>\n' +
 						' * <%= pkg.homepageShortened %>' +
 						' */\n\n',
 		uglify: {
@@ -23,7 +23,13 @@ module.exports = function(grunt) {
 					}
 				},
 				files: {
-					'dest/respond.src.js': ['src/matchmedia.polyfill.js', 'src/respond.js']
+					// CHANGED do not include matchMedia polyfill
+					// We instead include https://github.com/weblinc/media-match,
+					// which actually polyfills matchMedia for IE8 and other browsers
+					// that do not support media queries at all. The popular
+					// polyfill by Paul Irish only polyfills matchMedia for browsers
+					// that do support media queries, but not window#matchMedia.
+					'dest/respond.src.js': ['src/respond.js']
 				}
 			},
 			minMatchMedia: {

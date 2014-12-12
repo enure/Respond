@@ -3,29 +3,6 @@
  * Licensed under MIT
  * http://j.mp/respondjs */
 
-/*! matchMedia() polyfill - Test a CSS media type/query in JS. Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas. Dual MIT/BSD license */
-/*! NOTE: If you're already including a window.matchMedia polyfill via Modernizr or otherwise, you don't need this part */
-(function(w) {
-  "use strict";
-  w.matchMedia = w.matchMedia || function(doc, undefined) {
-    var bool, docElem = doc.documentElement, refNode = docElem.firstElementChild || docElem.firstChild, fakeBody = doc.createElement("body"), div = doc.createElement("div");
-    div.id = "mq-test-1";
-    div.style.cssText = "position:absolute;top:-100em";
-    fakeBody.style.background = "none";
-    fakeBody.appendChild(div);
-    return function(q) {
-      div.innerHTML = '&shy;<style media="' + q + '"> #mq-test-1 { width: 42px; }</style>';
-      docElem.insertBefore(fakeBody, refNode);
-      bool = div.offsetWidth === 42;
-      docElem.removeChild(fakeBody);
-      return {
-        matches: bool,
-        media: q
-      };
-    };
-  }(w.document);
-})(this);
-
 (function(w) {
   "use strict";
   var respond = {};
@@ -80,8 +57,7 @@
     minmaxwh: /\(\s*m(in|ax)\-(height|width)\s*:\s*(\s*[0-9\.]+)(px|em)\s*\)/gi,
     other: /\([^\)]*\)/g
   };
-  respond.mediaQueriesSupported = w.matchMedia && w.matchMedia("only all") !== null && w.matchMedia("only all").matches;
-  if (respond.mediaQueriesSupported) {
+  if (w.document.documentElement.className.indexOf("is-ie9") !== -1) {
     return;
   }
   var doc = w.document, docElem = doc.documentElement, mediastyles = [], rules = [], appendedEls = [], parsedSheets = {}, resizeThrottle = 30, head = doc.getElementsByTagName("head")[0] || docElem, base = doc.getElementsByTagName("base")[0], links = head.getElementsByTagName("link"), lastCall, resizeDefer, eminpx, getEmValue = function() {
