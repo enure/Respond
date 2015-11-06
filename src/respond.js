@@ -12,6 +12,8 @@
 
 	//define ajax obj
 	var requestQueue = [],
+		// http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+		twoHundo = /^(20\d|1223)$/,
 		xmlHttp = (function() {
 			var xmlhttpmethod = false;
 			try {
@@ -21,34 +23,42 @@
 				xmlhttpmethod = new w.ActiveXObject( "Microsoft.XMLHTTP" );
 			}
 			return function(){
+				// For compatibility with jpillora/xdomain. See issue:
+				// https://github.com/jpillora/xdomain/issues/120
+				if (w.xdomain) {
+					return new w.XMLHttpRequest();
+				}
 				return xmlhttpmethod;
 			};
 		})(),
 
 		//tweaked Ajax functions from Quirksmode
 		ajax = function( url, callback ) {
-			var req;
-			// For compatibility with jpillora/xdomain. See issue:
-			// https://github.com/jpillora/xdomain/issues/120
-			if (w.xdomain) {
-				req = new w.XMLHttpRequest();
-			} else {
-				req = xmlHttp();
-			}
+			var req = xmlHttp();
 			if (!req){
 				return;
 			}
-			req.open( "GET", url, true );
-			req.onreadystatechange = function () {
-				if ( req.readyState !== 4 || req.status !== 200 && req.status !== 304 ){
-					return;
-				}
-				callback( req.responseText );
-			};
-			if ( req.readyState === 4 ){
-				return;
+			function done(response) {
+				req.onreadystatechange = null;
+				callback(response);
 			}
-			req.send( null );
+			req.onreadystatechange = function () {
+				if (req.readyState === 4) {
+					if (twoHundo.test(req.status)) {
+						done(req.responseText);
+					} else {
+						done();
+					}
+				}
+			};
+			// IE8 throws an error when making an x-domain request and there
+			// is no slave / proxy for the domain. Ignore the error and move on.
+			try {
+				req.open( "GET", url, true );
+				req.send( null );
+			} catch (err) {
+				done();
+			}
 		},
 		isUnsupportedMediaQuery = function( query ) {
 			return query.replace( respond.regex.minmaxwh, '' ).match( respond.regex.other );
@@ -302,12 +312,15 @@
 				var thisRequest = requestQueue.shift();
 
 				ajax( thisRequest.href, function( styles ){
-					translate( styles, thisRequest.href, thisRequest.media );
 					parsedSheets[ thisRequest.href ] = true;
+
+					if (styles) {
+						translate( styles, thisRequest.href, thisRequest.media );
+					}
 
 					// by wrapping recursive function call in setTimeout
 					// we prevent "Stack overflow" error in IE7
-					w.setTimeout(function(){ makeRequests(); },0);
+					w.setTimeout(makeRequests, 0);
 				} );
 			}
 		},
